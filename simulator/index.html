@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmanFishAI - Marine Conservation Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* General UI Styles from original simulator.txt */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif; /* Changed to Inter for consistency */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1d1d1f;
+            overflow-x: hidden;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5%;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.7;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            padding: 0 5%;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-opacity='0.1'%3E%3Cpolygon fill='%23fff' points='50 0 60 40 100 50 60 60 50 100 40 60 0 50 40 40'/%3E%3C/g%3E%3C/svg%3E") center/100px;
+            opacity: 0.1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+            max-width: 600px;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, #007AFF, #0056CC);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0, 122, 255, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 50px rgba(0, 122, 255, 0.4);
+        }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 30px 30px 0 0;
+            margin-top: -30px;
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            padding: 80px 5% 40px;
+        }
+
+        .section {
+            max-width: 1200px;
+            margin: 0 auto 120px;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #1d1d1f;
+            letter-spacing: -0.02em;
+        }
+
+        .section-subtitle {
+            font-size: 1.3rem;
+            text-align: center;
+            color: #86868b;
+            margin-bottom: 4rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.4s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1d1d1f;
+        }
+
+        .feature-description {
+            color: #86868b;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .feature-button {
+            background: rgba(0, 122, 255, 0.1);
+            color: #007AFF;
+            border: 2px solid rgba(0, 122, 255, 0.2);
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .feature-button:hover {
+            background: #007AFF;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Special Feature Cards */
+        .ocean-cleanup {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .ocean-cleanup .feature-description {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .ocean-cleanup .feature-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .ocean-cleanup .feature-button:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .quiz-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .quiz-section .feature-description {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .quiz-section .feature-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .quiz-section .feature-button:hover {
+            background: white;
+            color: #f5576c;
+        }
+
+        .video-section {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .video-section .feature-description {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .video-section .feature-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .video-section .feature-button:hover {
+            background: white;
+            color: #4facfe;
+        }
+
+        /* Achievement Section */
+        .achievement-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 30px;
+            padding: 4rem;
+            text-align: center;
+            color: white;
+            margin-top: 4rem;
+        }
+
+        .achievement-icon {
+            font-size: 5rem;
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .achievement-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .achievement-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.3s ease;
+            overflow-y: auto; /* Allow scrolling for modal content */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            margin: 2% auto;
+            padding: 3rem;
+            border-radius: 20px;
+            max-width: 800px;
+            position: relative;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex; /* Use flex for content alignment */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh; /* Ensure modal content takes up space */
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #86868b;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #1d1d1f;
+        }
+
+        .modal-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #1d1d1f;
+            text-align: center;
+        }
+
+        .modal-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #86868b;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        /* Game Specific Styles (from code for whale pacman.txt) */
+        .game-wrapper { /* This class is already used, will apply to the main game content */
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            max-width: 95%;
+            width: 800px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Adjust canvas styling to fit within modal */
+        #gameCanvas {
+            background-color: #add8e6; /* Base ocean blue for game area */
+            border: 3px solid #0056b3;
+            border-radius: 10px;
+            display: block;
+            touch-action: none; /* Disable default touch actions like scrolling */
+            width: 100%; /* Make canvas responsive within its container */
+            max-width: 600px; /* Max width for desktop */
+            height: auto; /* Maintain aspect ratio */
+        }
+
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0056b3;
+            margin-top: 1rem;
+        }
+
+        /* Game Message Box (re-using existing modal-like style) */
+        .game-message-box { /* Renamed to avoid conflict with main .message-box */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            z-index: 1000;
+            display: none; /* Hidden by default */
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
+            border: 2px solid #fff;
+            width: 90%; /* Responsive width */
+            max-width: 500px; /* Max width for desktop */
+        }
+
+        .game-message-box button {
+            background-color: #28a745; /* Green button */
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.4rem;
+            margin-top: 2rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-message-box button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap; /* Allow controls to wrap on smaller screens */
+            justify-content: center;
+        }
+
+        .control-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px; /* Fixed width for consistency */
+            height: 60px; /* Fixed height for consistency */
+            font-weight: bold;
+        }
+
+        .control-button:hover {
+            background-color: #0056b3;
+        }
+
+        .control-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Quiz specific styles */
+        .quiz-question {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #1d1d1f;
+        }
+        .quiz-question h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+        .quiz-option {
+            background-color: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+        }
+        .quiz-option:hover {
+            background-color: #0056b3;
+        }
+        .quiz-option:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .quiz-result-box { /* Custom message box for quiz */
+            display: none;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 10px;
+            background: #f0f0f0;
+            color: #333;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border: 1px solid #ccc;
+        }
+        .quiz-result-box.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        .quiz-result-box.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.2rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-card {
+                padding: 2rem;
+            }
+            
+            .section-title {
+                font-size: 2.5rem;
+            }
+            
+            .navbar {
+                padding: 0 20px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+
+            .modal-content {
+                padding: 2rem;
+                margin: 5% auto;
+            }
+            .modal-title {
+                font-size: 2rem;
+            }
+            .modal-text {
+                font-size: 1rem;
+            }
+
+            .game-wrapper {
+                padding: 1rem;
+                gap: 1rem;
+            }
+            #gameCanvas {
+                max-width: 100%;
+            }
+            .game-info {
+                font-size: 1rem;
+            }
+            .game-message-box {
+                font-size: 1.4rem;
+                padding: 1.5rem;
+            }
+            .game-message-box button {
+                font-size: 1.2rem;
+                padding: 0.8rem 1.5rem;
+            }
+            .controls {
+                flex-direction: column; /* Stack buttons vertically */
+                align-items: center;
+            }
+            .control-button {
+                width: 50px;
+                height: 50px;
+                font-size: 1rem;
+            }
+            .controls > div { /* Adjust the container for left/down/right buttons */
+                display: flex;
+                flex-direction: row; /* Keep them in a row */
+                gap: 1rem;
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="#" class="logo">OmanFishAI</a>
+        <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#" onclick="goHome()">Home</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Marine Conservation<br>Simulator</h1>
+            <p>Experience the beauty of marine life and learn how to protect our oceans through interactive simulations and educational content.</p>
+            <button class="cta-button" onclick="scrollToFeatures()">Get Started</button>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <section id="features" class="section">
+            <h2 class="section-title">Interactive Learning</h2>
+            <p class="section-subtitle">Engage with marine conservation through hands-on activities designed to educate and inspire action.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card ocean-cleanup" onclick="openModal('cleanupModal')">
+                    <span class="feature-icon">🌊</span>
+                    <h3 class="feature-title">Ocean Cleanup</h3>
+                    <p class="feature-description">Remove trash and debris from virtual ocean environments. Learn about the impact of pollution on marine ecosystems.</p>
+                    <button class="feature-button">Start Cleaning</button>
+                </div>
+
+                <div class="feature-card quiz-section" onclick="openModal('quizModal')">
+                    <span class="feature-icon">🧠</span>
+                    <h3 class="feature-title">Knowledge Quiz</h3>
+                    <p class="feature-description">Test your understanding of marine conservation with interactive quizzes about endangered species and ocean health.</p>
+                    <button class="feature-button">Take Quiz</button>
+                </div>
+
+                <div class="feature-card video-section" onclick="openModal('videoModal')">
+                    <span class="feature-icon">🎥</span>
+                    <h3 class="feature-title">Educational Videos</h3>
+                    <p class="feature-description">Watch carefully curated documentaries and educational content about marine life and conservation efforts.</p>
+                    <button class="feature-button">Watch Now</button>
+                </div>
+
+                <div class="feature-card" onclick="openModal('badgeModal')">
+                    <span class="feature-icon">🏆</span>
+                    <h3 class="feature-title">Achievement System</h3>
+                    <p class="feature-description">Earn badges and track your progress as you complete conservation challenges and expand your knowledge.</p>
+                    <button class="feature-button">View Badges</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="achievement-section">
+            <div class="achievement-icon">🌍</div>
+            <h2 class="achievement-title">Marine Guardian</h2>
+            <p class="achievement-subtitle">You've earned this badge for your commitment to ocean conservation</p>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <div id="cleanupModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('cleanupModal')">&times;</span>
+            <h2 class="modal-title">🌊 Ocean Cleanup Challenge</h2>
+            <p class="modal-text">Help protect marine life by cleaning up ocean debris. Collect trash items, but don't let them touch the Whale Shark following behind you!</p>
+            
+            <!-- Integrated Game Content -->
+            <div class="game-wrapper">
+                <canvas id="gameCanvas"></canvas>
+
+                <div class="game-info">
+                    <div>Score: <span id="scoreDisplay">0</span></div>
+                    <div>Level: <span id="levelDisplay">1</span></div>
+                </div>
+
+                <div class="controls">
+                    <button id="upButton" class="control-button">▲</button>
+                    <div class="flex flex-col">
+                        <button id="leftButton" class="control-button">◀</button>
+                        <button id="downButton" class="control-button">▼</button>
+                        <button id="rightButton" class="control-button">▶</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-message-box" id="gameMessageBox">
+                <p id="gameMessageText"></p>
+                <button id="gameResetButton">Play Again!</button>
+            </div>
+            <!-- End Integrated Game Content -->
+            
+            <p class="modal-text">Every piece of trash removed helps create a safer environment for marine species. Keep going to earn your Ocean Guardian badge!</p>
+        </div>
+    </div>
+
+    <div id="quizModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('quizModal')">&times;</span>
+            <h2 class="modal-title">🧠 Marine Conservation Quiz</h2>
+            <div id="quizContent">
+                <div id="question1" class="quiz-question">
+                    <h3>How many whale sharks are estimated to remain in the wild?</h3>
+                    <div class="quiz-options">
+                        <button class="quiz-option" data-correct="false">About 200</button>
+                        <button class="quiz-option" data-correct="false">About 2,000</button>
+                        <button class="quiz-option" data-correct="true">About 20,000</button>
+                    </div>
+                </div>
+                <div id="quizResult" class="quiz-result-box">
+                    <p id="quizResultText"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="videoModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('videoModal')">&times;</span>
+            <h2 class="modal-title">🎥 Marine Conservation Documentary</h2>
+            <p class="modal-text">Watch this educational video about marine conservation and the importance of protecting our oceans.</p>
+            
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 400px; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; margin: 2rem 0; width: 100%; max-width: 600px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 5rem; margin-bottom: 1rem;">🐋</div>
+                    <h3>Ocean Guardians</h3>
+                    <p style="opacity: 0.8;">A documentary about marine conservation</p>
+                    <button style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 15px 30px; border-radius: 25px; margin-top: 1rem; cursor: pointer;">▶ Play Video</button>
+                </div>
+            </div>
+            
+            <p class="modal-text">Learn about the critical role marine ecosystems play in our planet's health and discover how you can contribute to conservation efforts.</p>
+        </div>
+    </div>
+
+    <div id="badgeModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('badgeModal')">&times;</span>
+            <h2 class="modal-title">🏆 Your Achievement Badges</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; color: white;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🌊</div>
+                    <h3>Ocean Cleaner</h3>
+                    <p style="opacity: 0.8;">Completed cleanup challenges</p>
+                </div>
+                <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 15px; color: white;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🧠</div>
+                    <h3>Knowledge Expert</h3>
+                    <p style="opacity: 0.8;">Mastered conservation quizzes</p>
+                </div>
+                <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 15px; color: white;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🎓</div>
+                    <h3>Marine Scholar</h3>
+                    <p style="opacity: 0.8;">Watched educational content</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Original UI Script Functions ---
+        function goHome() {
+            // In a real application, this would navigate to a home page.
+            // For this simulator, we can just close any open modals or scroll to top.
+            document.body.style.overflow = 'auto'; // Ensure scrolling is re-enabled
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToFeatures() {
+            document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex'; // Use flex for centering
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+            if (modalId === 'cleanupModal') {
+                // Initialize and start the Pac-Man game when the cleanup modal opens
+                resetGame(); // Call the game's reset function to start
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            document.body.style.overflow = 'auto'; // Re-enable background scrolling
+
+            if (modalId === 'cleanupModal') {
+                // Stop the game loop when the cleanup modal closes
+                gameOver = true; // Set game over to stop the animation frame
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+            }
+            // Reset quiz state if quiz modal is closed
+            if (modalId === 'quizModal') {
+                document.querySelectorAll('.quiz-option').forEach(option => {
+                    option.disabled = false;
+                    option.style.background = ''; // Reset background
+                });
+                document.getElementById('quizResult').style.display = 'none';
+                document.getElementById('quizResult').classList.remove('correct', 'incorrect');
+                document.getElementById('quizResultText').textContent = '';
+            }
+        }
+
+        // Quiz Logic - Modified to use custom message box instead of alert()
+        const quizResultBox = document.getElementById('quizResult');
+        const quizResultText = document.getElementById('quizResultText');
+
+        document.querySelectorAll('.quiz-option').forEach(button => {
+            button.addEventListener('click', function() {
+                selectAnswer(this);
+            });
+        });
+
+        function selectAnswer(button) {
+            const allOptions = document.querySelectorAll('.quiz-option');
+            allOptions.forEach(option => {
+                option.disabled = true; // Disable all options after selection
+            });
+            
+            const isCorrect = button.dataset.correct === 'true';
+
+            if (isCorrect) {
+                button.style.background = '#27ae60'; // Green for correct
+                quizResultBox.classList.add('correct');
+                quizResultText.textContent = 'Correct! Approximately 20,000 whale sharks remain in the wild. These gentle giants are vulnerable to fishing, boat strikes, and habitat loss. You\'ve earned 50 points and the Knowledge Expert badge!';
+            } else {
+                button.style.background = '#e74c3c'; // Red for incorrect
+                quizResultBox.classList.add('incorrect');
+                quizResultText.textContent = 'Not quite right. The correct answer is about 20,000 whale sharks worldwide.';
+            }
+            quizResultBox.style.display = 'block';
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                const modalId = event.target.id;
+                closeModal(modalId);
+            }
+        }
+
+        // Smooth animations on scroll
+        window.addEventListener('scroll', function() {
+            const cards = document.querySelectorAll('.feature-card');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        // Initialize feature card animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.feature-card');
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(50px)';
+                card.style.transition = 'all 0.6s ease';
+            });
+        });
+
+        // --- Integrated Whale Shark Game Script ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const levelDisplay = document.getElementById('levelDisplay');
+        const gameMessageBox = document.getElementById('gameMessageBox'); // Renamed ID
+        const gameMessageText = document.getElementById('gameMessageText'); // Renamed ID
+        const gameResetButton = document.getElementById('gameResetButton'); // Renamed ID
+
+        // On-screen controls
+        const upButton = document.getElementById('upButton');
+        const downButton = document.getElementById('downButton');
+        const leftButton = document.getElementById('leftButton');
+        const rightButton = document.getElementById('rightButton');
+
+        // Game settings
+        const CANVAS_WIDTH = 600;
+        const CANVAS_HEIGHT = 400;
+        // Adjusted sizes for the new images - you might need to fine-tune these
+        const PLAYER_SIZE = 60; // Increased player size
+        const WHALE_SHARK_SIZE = 50; // Decreased whale shark size
+        const TRASH_SIZE = 50; // Increased trash size
+
+        const PLAYER_SPEED = 5;
+        let TRASH_SPEED_MIN = 1;
+        let TRASH_SPEED_MAX = 3;
+        const MAX_TRASH_ITEMS = 10;
+        let TRASH_SPAWN_INTERVAL = 1000; // milliseconds
+        const LEVEL_UP_THRESHOLD = 100; // Score needed to level up (10 points per trash, so 10 trash items)
+
+        let player = {
+            x: CANVAS_WIDTH / 2 - PLAYER_SIZE / 2,
+            y: CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2,
+            dx: 0,
+            dy: 0,
+            image: new Image() // Image object for the player
+        };
+
+        let whaleShark = {
+            x: player.x,
+            y: player.y + PLAYER_SIZE + 10,
+            size: WHALE_SHARK_SIZE,
+            image: new Image() // Image object for the whale shark
+        };
+
+        // NEW: Background image object
+        let backgroundImage = new Image();
+
+        // Array to hold different trash image objects
+        const trashImageUrls = [
+            'https://i.imgur.com/3P4Moux.png', // Trash 1
+            'https://i.imgur.com/bt0sXbt.png', // Trash 2
+            'https://i.imgur.com/k4BLyCW.png', // Trash 3
+            'https://i.imgur.com/pfQjK2e.png'  // Trash 4
+        ];
+        let trashImages = []; // Array to store loaded trash image objects
+
+        let trashItems = [];
+        let score = 0;
+        let level = 1;
+        let gameOver = false;
+        let lastTrashSpawnTime = 0;
+        let animationFrameId; // To store the requestAnimationFrame ID
+        let imagesLoaded = 0;
+        // Updated totalImagesToLoad to include the background image
+        const totalImagesToLoad = 1 + 1 + trashImageUrls.length + 1; // Player + Whale Shark + all trash types + Background
+
+        // --- Image Loading ---
+        function loadImage(imageObj, src) {
+            imageObj.onload = () => {
+                imagesLoaded++;
+                if (imagesLoaded === totalImagesToLoad) {
+                    console.log("All game images loaded!");
+                    // No direct resetGame() call here, as it's triggered by openModal
+                }
+            };
+            imageObj.onerror = () => {
+                console.error(`Failed to load image: ${src}. Using placeholder/default drawing.`);
+                imagesLoaded++;
+                if (imagesLoaded === totalImagesToLoad) {
+                    console.log("All game images loaded (with some errors).");
+                }
+            };
+            imageObj.src = src;
+        }
+
+        // Load player image
+        loadImage(player.image, 'https://i.imgur.com/wmgvMHT.png'); // Your dustbin image
+
+        // Load whale shark image
+        loadImage(whaleShark.image, 'https://i.imgur.com/OBtyItf.png'); // Your whale shark image
+
+        // Load trash images
+        trashImageUrls.forEach(url => {
+            const img = new Image();
+            loadImage(img, url);
+            trashImages.push(img);
+        });
+
+        // Load background image
+        loadImage(backgroundImage, 'https://i.imgur.com/JUHgc03.jpg'); // Your ocean background image
+
+
+        // Resize canvas to fit container and maintain aspect ratio
+        function resizeCanvas() {
+            canvas.width = CANVAS_WIDTH;
+            canvas.height = CANVAS_HEIGHT;
+            // No gradient here, background will be drawn by draw()
+        }
+
+        // Only call resize on window resize, load is handled by initial game setup
+        window.addEventListener('resize', resizeCanvas);
+
+        // --- Game Objects Drawing ---
+        function drawPlayer() {
+            // If image is loaded, draw it. Otherwise, fallback to shape.
+            if (player.image.complete && player.image.naturalWidth > 0) {
+                ctx.drawImage(player.image, player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
+            } else {
+                // Fallback to drawing shape if image fails to load
+                ctx.fillStyle = '#8b4513';
+                ctx.fillRect(player.x, player.y + 5, PLAYER_SIZE, PLAYER_SIZE - 5);
+                ctx.beginPath();
+                ctx.moveTo(player.x - 5, player.y + 5);
+                ctx.lineTo(player.x + PLAYER_SIZE + 5, player.y + 5);
+                ctx.lineTo(player.x + PLAYER_SIZE, player.y);
+                ctx.lineTo(player.x, player.y);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#654321';
+                ctx.fillRect(player.x + PLAYER_SIZE / 4, player.y - 5, PLAYER_SIZE / 2, 5);
+            }
+        }
+
+        function drawWhaleShark() {
+            // If image is loaded, draw it. Otherwise, fallback to shape.
+            if (whaleShark.image.complete && whaleShark.image.naturalWidth > 0) {
+                ctx.drawImage(whaleShark.image, whaleShark.x, whaleShark.y, WHALE_SHARK_SIZE, WHALE_SHARK_SIZE);
+            } else {
+                // Fallback to drawing shape if image fails to load
+                ctx.fillStyle = '#007bff';
+                ctx.beginPath();
+                ctx.ellipse(whaleShark.x + whaleShark.size / 2, whaleShark.y + whaleShark.size / 2, whaleShark.size * 0.4, whaleShark.size * 0.2, Math.PI / 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(whaleShark.x + whaleShark.size / 2, whaleShark.y + whaleShark.size * 0.8);
+                ctx.lineTo(whaleShark.x + whaleShark.size * 0.2, whaleShark.y + whaleShark.size * 1.1);
+                ctx.lineTo(whaleShark.x + whaleShark.size * 0.8, whaleShark.y + whaleShark.size * 1.1);
+                ctx.closePath();
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(whaleShark.x + whaleShark.size * 0.4, whaleShark.y + whaleShark.size * 0.2);
+                ctx.lineTo(whaleShark.x + whaleShark.size * 0.5, whaleShark.y - 5);
+                ctx.lineTo(whaleShark.x + whaleShark.size * 0.6, whaleShark.y + whaleShark.size * 0.2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(whaleShark.x + whaleShark.size * 0.7, whaleShark.y + whaleShark.size * 0.3, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawTrash(trash) {
+            // Use a random trash image if available, otherwise fallback to shape.
+            const trashImg = trashImages[trash.type % trashImages.length];
+            if (trashImg && trashImg.complete && trashImg.naturalWidth > 0) {
+                ctx.drawImage(trashImg, trash.x, trash.y, TRASH_SIZE, TRASH_SIZE);
+            } else {
+                // Fallback to drawing shape if image fails to load
+                const trashColor = `hsl(0, ${50 + Math.random() * 20}%, ${40 + Math.random() * 10}%)`;
+                ctx.fillStyle = trashColor;
+                ctx.beginPath();
+                ctx.arc(trash.x + TRASH_SIZE / 2, trash.y + TRASH_SIZE / 2, TRASH_SIZE / 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.beginPath();
+                ctx.arc(trash.x + TRASH_SIZE * 0.7, trash.y + TRASH_SIZE * 0.3, TRASH_SIZE * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // --- Game Logic ---
+        function update() {
+            if (gameOver) return;
+
+            // Update player position
+            player.x += player.dx;
+            player.y += player.dy;
+
+            // Keep player within canvas bounds
+            if (player.x < 0) player.x = 0;
+            if (player.x + PLAYER_SIZE > CANVAS_WIDTH) player.x = CANVAS_WIDTH - PLAYER_SIZE;
+            if (player.y < 0) player.y = 0;
+            if (player.y + PLAYER_SIZE > CANVAS_HEIGHT) player.y = CANVAS_HEIGHT - PLAYER_SIZE;
+
+            // Whale shark follows player
+            const followDistance = 40; // Distance behind player
+            const dx = player.x - whaleShark.x;
+            const dy = player.y - whaleShark.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > followDistance) {
+                const angle = Math.atan2(dy, dx);
+                whaleShark.x = player.x - Math.cos(angle) * followDistance;
+                whaleShark.y = player.y - Math.sin(angle) * followDistance;
+            }
+
+            // Spawn new trash
+            const currentTime = Date.now();
+            if (trashItems.length < MAX_TRASH_ITEMS && currentTime - lastTrashSpawnTime > TRASH_SPAWN_INTERVAL) {
+                spawnTrash();
+                lastTrashSpawnTime = currentTime;
+            }
+
+            // Update trash positions and check collisions
+            for (let i = trashItems.length - 1; i >= 0; i--) {
+                const trash = trashItems[i];
+
+                // Simple trash movement: move towards whale shark
+                const trashDx = whaleShark.x - trash.x;
+                const trashDy = whaleShark.y - trash.y;
+                const trashDist = Math.sqrt(trashDx * trashDx + trashDy * trashDy);
+
+                if (trashDist > 0) {
+                    trash.x += (trashDx / trashDist) * trash.speed;
+                    trash.y += (trashDy / trashDist) * trash.speed;
+                }
+
+
+                // Collision: Player (Dustbin) vs. Trash
+                if (checkCollision(player, trash, PLAYER_SIZE, TRASH_SIZE)) {
+                    trashItems.splice(i, 1); // Remove trash
+                    score += 10; // Each trash is worth 10 points
+                    scoreDisplay.textContent = score;
+                    checkLevelUp(); // Check for level up after scoring
+                }
+
+                // Collision: Trash vs. Whale Shark
+                if (checkCollision(whaleShark, trash, WHALE_SHARK_SIZE, TRASH_SIZE)) {
+                    endGame('Game Over! The trash touched the whale shark.');
+                    return; // Stop updating if game is over
+                }
+            }
+        }
+
+        function draw() {
+            // Draw background image if loaded, otherwise fallback to gradient
+            if (backgroundImage.complete && backgroundImage.naturalWidth > 0) {
+                ctx.drawImage(backgroundImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            } else {
+                const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
+                gradient.addColorStop(0, '#87ceeb');
+                gradient.addColorStop(1, '#00bfff');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            }
+
+            drawPlayer();
+            drawWhaleShark();
+            trashItems.forEach(drawTrash);
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            if (!gameOver) {
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function spawnTrash() {
+            const side = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+            let x, y;
+
+            switch (side) {
+                case 0: // Top
+                    x = Math.random() * CANVAS_WIDTH;
+                    y = -TRASH_SIZE;
+                    break;
+                case 1: // Right
+                    x = CANVAS_WIDTH;
+                    y = Math.random() * CANVAS_HEIGHT;
+                    break;
+                case 2: // Bottom
+                    x = Math.random() * CANVAS_WIDTH;
+                    y = CANVAS_HEIGHT;
+                    break;
+                case 3: // Left
+                    x = -TRASH_SIZE;
+                    y = Math.random() * CANVAS_HEIGHT;
+                    break;
+            }
+
+            trashItems.push({
+                x: x,
+                y: y,
+                size: TRASH_SIZE,
+                speed: TRASH_SPEED_MIN + Math.random() * (TRASH_SPEED_MAX - TRASH_SPEED_MIN),
+                type: Math.floor(Math.random() * trashImageUrls.length) // Assign a random trash type for image selection
+            });
+        }
+
+        function checkCollision(obj1, obj2, size1, size2) {
+            // Simple AABB collision detection (Axis-Aligned Bounding Box)
+            return obj1.x < obj2.x + size2 &&
+                   obj1.x + size1 > obj2.x &&
+                   obj1.y < obj2.y + size2 &&
+                   obj1.y + size1 > obj2.y;
+        }
+
+        function checkLevelUp() {
+            // Level up every 100 points (10 trash items)
+            if (score > 0 && score % LEVEL_UP_THRESHOLD === 0) {
+                level++;
+                levelDisplay.textContent = level;
+                TRASH_SPEED_MAX += 0.5; // Increase max trash speed
+                TRASH_SPAWN_INTERVAL = Math.max(200, TRASH_SPAWN_INTERVAL - 100); // Decrease spawn interval, min 200ms
+            }
+        }
+
+        function endGame(message) {
+            gameOver = true;
+            gameMessageText.textContent = message; // Use game-specific message box
+            gameMessageBox.style.display = 'flex';
+            cancelAnimationFrame(animationFrameId); // Stop the game loop
+        }
+
+        function resetGame() {
+            // Ensure images are loaded before starting the game
+            if (imagesLoaded < totalImagesToLoad) {
+                console.log("Images not fully loaded yet, waiting to reset game...");
+                return; // Don't reset until all images are ready
+            }
+
+            // Clear any existing animation frame to ensure a clean restart
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            
+            player = {
+                x: CANVAS_WIDTH / 2 - PLAYER_SIZE / 2,
+                y: CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2,
+                dx: 0,
+                dy: 0,
+                image: player.image // Keep the loaded image object
+            };
+            whaleShark = {
+                x: player.x,
+                y: player.y + PLAYER_SIZE + 10,
+                size: WHALE_SHARK_SIZE,
+                image: whaleShark.image // Keep the loaded image object
+            };
+            trashItems = [];
+            score = 0;
+            level = 1;
+            gameOver = false;
+            scoreDisplay.textContent = score;
+            levelDisplay.textContent = level;
+            gameMessageBox.style.display = 'none'; // Hide game over message
+            lastTrashSpawnTime = Date.now();
+            // Reset difficulty settings
+            TRASH_SPEED_MIN = 1;
+            TRASH_SPEED_MAX = 3;
+            TRASH_SPAWN_INTERVAL = 1000;
+            
+            resizeCanvas(); // Ensure canvas is correctly sized and background drawn
+            // Start the game loop
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        // --- Event Listeners for Player Movement ---
+        let keysPressed = {};
+
+        document.addEventListener('keydown', (e) => {
+            keysPressed[e.key] = true;
+            updatePlayerDirection();
+        });
+
+        document.addEventListener('keyup', (e) => {
+            delete keysPressed[e.key];
+            updatePlayerDirection();
+        });
+
+        function updatePlayerDirection() {
+            player.dx = 0;
+            player.dy = 0;
+
+            if (keysPressed['ArrowUp'] || keysPressed['w']) {
+                player.dy = -PLAYER_SPEED;
+            }
+            if (keysPressed['ArrowDown'] || keysPressed['s']) {
+                player.dy = PLAYER_SPEED;
+            }
+            if (keysPressed['ArrowLeft'] || keysPressed['a']) {
+                player.dx = -PLAYER_SPEED;
+            }
+            if (keysPressed['ArrowRight'] || keysPressed['d']) {
+                player.dx = PLAYER_SPEED;
+            }
+        }
+
+        // --- Touch Controls (On-screen buttons) ---
+        upButton.addEventListener('touchstart', (e) => { e.preventDefault(); player.dy = -PLAYER_SPEED; });
+        upButton.addEventListener('touchend', (e) => { e.preventDefault(); player.dy = 0; });
+        upButton.addEventListener('mousedown', () => { player.dy = -PLAYER_SPEED; });
+        upButton.addEventListener('mouseup', () => { player.dy = 0; });
+        upButton.addEventListener('mouseleave', () => { player.dy = 0; }); // For mouse drag off button
+
+        downButton.addEventListener('touchstart', (e) => { e.preventDefault(); player.dy = PLAYER_SPEED; });
+        downButton.addEventListener('touchend', (e) => { e.preventDefault(); player.dy = 0; });
+        downButton.addEventListener('mousedown', () => { player.dy = PLAYER_SPEED; });
+        downButton.addEventListener('mouseup', () => { player.dy = 0; });
+        downButton.addEventListener('mouseleave', () => { player.dy = 0; });
+
+        leftButton.addEventListener('touchstart', (e) => { e.preventDefault(); player.dx = -PLAYER_SPEED; });
+        leftButton.addEventListener('touchend', (e) => { e.preventDefault(); player.dx = 0; });
+        leftButton.addEventListener('mousedown', () => { player.dx = -PLAYER_SPEED; });
+        leftButton.addEventListener('mouseup', () => { player.dx = 0; });
+        leftButton.addEventListener('mouseleave', () => { player.dx = 0; });
+
+        rightButton.addEventListener('touchstart', (e) => { e.preventDefault(); player.dx = PLAYER_SPEED; });
+        rightButton.addEventListener('touchend', (e) => { e.preventDefault(); player.dx = 0; });
+        rightButton.addEventListener('mousedown', () => { player.dx = PLAYER_SPEED; });
+        rightButton.addEventListener('mouseup', () => { player.dx = 0; });
+        rightButton.addEventListener('mouseleave', () => { player.dx = 0; });
+
+
+        gameResetButton.addEventListener('click', resetGame); // Use game-specific reset button
+    </script>
+</body>
+</html>

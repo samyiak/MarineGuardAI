@@ -1,0 +1,5 @@
+oman_env/
+__pycache__/
+*.npy
+*.h5
+.DS_Store
