@@ -74,8 +74,10 @@ if uploaded_file:
         st.pyplot(fig)
 
         # 🔗 Simulator link
-        if st.button("🛡️ Protect This Species"):
-            st.markdown("[🌐 Open MarineGuard Simulator](https://your-simulator-link.com)", unsafe_allow_html=True)
+        st.markdown(
+    "<a href='https://frolicking-licorice-54f3a1.netlify.app' target='_blank'>🛡️ <button style='background-color:#00c2ff; color:white; padding:10px 20px; border:none; border-radius:10px;'>Protect This Species</button></a>",
+    unsafe_allow_html=True)
+
 
     st.divider()
 else:
